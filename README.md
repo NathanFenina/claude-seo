@@ -11,7 +11,7 @@ Comprehensive SEO analysis skill for Claude Code. Covers technical SEO, on-page 
 [![Claude Code Skill](https://img.shields.io/badge/Claude%20Code-Skill-blue)](https://claude.ai/claude-code)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Installation
+## Installation Nathan
 
 ### One-Command Install (Unix/macOS/Linux)
 
