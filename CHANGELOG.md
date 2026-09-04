@@ -25,7 +25,7 @@ Webflow, Notion, Perplexity, Reddit. Tous optionnels, avec repli gracieux.
 d'environnement, flag de commande, configuration — et sept garde-fous durs
 non désactivables.
 
-**11 scripts d'analyse** : crawler, PageRank interne, scoring on-page /100,
+**13 scripts d'analyse** : récupération de page, crawler, PageRank interne, scoring on-page /100,
 validation de schema, analyse de redirections, validation hreflang, audit
 d'images, analyse d'export Search Console, share of model, restauration CMS,
 garde-fou et diagnostic.
