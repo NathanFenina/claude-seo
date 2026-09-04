@@ -1,203 +1,137 @@
-# Claude SEO Installer for Windows
-# PowerShell installation script
+# ══════════════════════════════════════════════════════════════════
+#  Claude Code SEO Décupler — installation Windows
+#  https://github.com/NathanFenina/claude-seo
+# ══════════════════════════════════════════════════════════════════
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "║   Claude SEO - Installer             ║" -ForegroundColor Cyan
-Write-Host "║   Claude Code SEO Skill              ║" -ForegroundColor Cyan
-Write-Host "════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host ""
+function Install-SeoDecupler {
+    $Depot  = "https://github.com/NathanFenina/claude-seo"
+    $Claude = Join-Path $HOME ".claude"
+    $Racine = Join-Path $Claude "seo-decupler"
 
-function Resolve-Python {
-    $pythonCmd = Get-Command -Name python -ErrorAction SilentlyContinue
-    if ($null -ne $pythonCmd) {
-        return @{ Exe = 'python'; Args = @() }
-    }
-
-    $pyCmd = Get-Command -Name py -ErrorAction SilentlyContinue
-    if ($null -ne $pyCmd) {
-        return @{ Exe = 'py'; Args = @('-3') }
-    }
-
-    return $null
-}
-
-function Invoke-External {
-    param(
-        [Parameter(Mandatory = $true)][string]$Exe,
-        [Parameter(Mandatory = $true)][string[]]$Args,
-        [switch]$Quiet
-    )
-
-    $output = & $Exe @Args 2>&1
-    $exitCode = $LASTEXITCODE
-
-    if (-not $Quiet -and $null -ne $output -and $output.Count -gt 0) {
-        $output | ForEach-Object { Write-Host $_ }
-    }
-
-    return @{ ExitCode = $exitCode; Output = $output }
-}
-
-# Check prerequisites
-$python = Resolve-Python
-if ($null -eq $python) {
-    Write-Host "✗ Python is required but was not found (tried 'python' and 'py')." -ForegroundColor Red
-    exit 1
-}
-
-try {
-    $pythonVersion = & $python.Exe @($python.Args + @('--version')) 2>&1
-    Write-Host "✓ $pythonVersion detected" -ForegroundColor Green
-} catch {
-    Write-Host "✗ Python is installed but could not be executed." -ForegroundColor Red
-    exit 1
-}
-
-try {
-    git --version | Out-Null
-    Write-Host "✓ Git detected" -ForegroundColor Green
-} catch {
-    Write-Host "✗ Git is required but not installed." -ForegroundColor Red
-    exit 1
-}
-
-# Set paths
-$SkillDir = "$env:USERPROFILE\.claude\skills\seo"
-$AgentDir = "$env:USERPROFILE\.claude\agents"
-$RepoUrl = "https://github.com/AgriciDaniel/claude-seo"
-
-# Create directories
-New-Item -ItemType Directory -Force -Path $SkillDir | Out-Null
-New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
-
-# Clone to temp directory
-$TempDir = Join-Path $env:TEMP "claude-seo-install"
-if (Test-Path $TempDir) {
-    Remove-Item -Recurse -Force $TempDir
-}
-
-$keepTemp = ($env:CLAUDE_SEO_KEEP_TEMP -eq '1')
-
-try {
-    Write-Host "↓ Downloading Claude SEO..." -ForegroundColor Yellow
-    $clone = Invoke-External -Exe 'git' -Args @('clone','--depth','1',$RepoUrl,$TempDir) -Quiet
-    if ($clone.ExitCode -ne 0) {
-        throw "git clone failed. Output:`n$($clone.Output -join "`n")"
-    }
-
-    # Copy skill files
-    Write-Host "→ Installing skill files..." -ForegroundColor Yellow
-    $skillSource = Join-Path $TempDir 'seo'
-    if (-not (Test-Path $skillSource)) {
-        $skillSource = Join-Path $TempDir 'skills\seo'
-    }
-    if (-not (Test-Path $skillSource)) {
-        throw "Could not find skill source folder in repo clone."
-    }
-    Copy-Item -Recurse -Force (Join-Path $skillSource '*') $SkillDir
-
-    # Copy sub-skills
-    $SkillsPath = "$TempDir\skills"
-    if (Test-Path $SkillsPath) {
-        Get-ChildItem -Directory $SkillsPath | ForEach-Object {
-            $target = "$env:USERPROFILE\.claude\skills\$($_.Name)"
-            New-Item -ItemType Directory -Force -Path $target | Out-Null
-            Copy-Item -Recurse -Force "$($_.FullName)\*" $target
-        }
-    }
-
-    # Copy schema templates
-    $SchemaPath = "$TempDir\schema"
-    if (Test-Path $SchemaPath) {
-        $SkillSchema = "$SkillDir\schema"
-        New-Item -ItemType Directory -Force -Path $SkillSchema | Out-Null
-        Copy-Item -Recurse -Force "$SchemaPath\*" $SkillSchema
-    }
-
-    # Copy reference docs
-    $PdfPath = "$TempDir\pdf"
-    if (Test-Path $PdfPath) {
-        $SkillPdf = "$SkillDir\pdf"
-        New-Item -ItemType Directory -Force -Path $SkillPdf | Out-Null
-        Copy-Item -Recurse -Force "$PdfPath\*" $SkillPdf
-    }
-
-    # Copy agents
-    Write-Host "→ Installing subagents..." -ForegroundColor Yellow
-    $AgentsPath = Join-Path $TempDir 'agents'
-    if (Test-Path $AgentsPath) {
-        Copy-Item -Force (Join-Path $AgentsPath '*.md') $AgentDir -ErrorAction SilentlyContinue
-    }
-
-    # Copy shared scripts
-    $ScriptsPath = "$TempDir\scripts"
-    if (Test-Path $ScriptsPath) {
-        $SkillScripts = "$SkillDir\scripts"
-        New-Item -ItemType Directory -Force -Path $SkillScripts | Out-Null
-        Copy-Item -Recurse -Force "$ScriptsPath\*" $SkillScripts
-    }
-
-    # Copy hooks
-    $HooksPath = "$TempDir\hooks"
-    if (Test-Path $HooksPath) {
-        $SkillHooks = "$SkillDir\hooks"
-        New-Item -ItemType Directory -Force -Path $SkillHooks | Out-Null
-        Copy-Item -Recurse -Force "$HooksPath\*" $SkillHooks
-    }
-
-    # Copy requirements.txt to skill dir for retry
-    $reqFile = Join-Path $TempDir 'requirements.txt'
-    $installedReqFile = Join-Path $SkillDir 'requirements.txt'
-    if (Test-Path $reqFile) {
-        Copy-Item -Force $reqFile $installedReqFile
-    }
-
-    # Install Python dependencies
-    Write-Host "→ Installing Python dependencies..." -ForegroundColor Yellow
-    if (Test-Path $reqFile) {
-        try {
-            $pip = Invoke-External -Exe $python.Exe -Args @($python.Args + @('-m','pip','install','-q','-r',$reqFile)) -Quiet
-            if ($pip.ExitCode -ne 0) {
-                throw ($pip.Output -join "`n")
-            }
-        } catch {
-            Write-Host "  ⚠  Could not auto-install Python packages." -ForegroundColor Yellow
-            Write-Host "  Try: $($python.Exe) $($python.Args -join ' ') -m pip install -r `"$installedReqFile`"" -ForegroundColor Yellow
-        }
-    } else {
-        Write-Host "  ⚠  No requirements.txt found; skipping Python dependency install." -ForegroundColor Yellow
-    }
-
-    # Optional: Install Playwright browsers
-    Write-Host "→ Installing Playwright browsers (optional, for visual analysis)..." -ForegroundColor Yellow
-    try {
-        $pw = Invoke-External -Exe $python.Exe -Args @($python.Args + @('-m','playwright','install','chromium')) -Quiet
-        if ($pw.ExitCode -ne 0) {
-            throw ($pw.Output -join "`n")
-        }
-    } catch {
-        Write-Host "  ⚠  Playwright install failed. Visual analysis will use WebFetch fallback." -ForegroundColor Yellow
-    }
-} catch {
     Write-Host ""
-    Write-Host "✗ Installation failed: $($_.Exception.Message)" -ForegroundColor Red
-    if ($keepTemp -and (Test-Path $TempDir)) {
-        Write-Host "Temp dir kept at: $TempDir" -ForegroundColor Yellow
+    Write-Host "  ╔════════════════════════════════════════════════╗"
+    Write-Host "  ║   Claude Code SEO Décupler                     ║"
+    Write-Host "  ║   36 skills · 14 agents · 13 MCP               ║"
+    Write-Host "  ╚════════════════════════════════════════════════╝"
+    Write-Host ""
+
+    # ─── Prérequis ────────────────────────────────────────────────
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        Write-Host "  ✗ Git est requis. Installez-le puis relancez." -ForegroundColor Red
+        return
     }
-    throw
-} finally {
-    if (-not $keepTemp -and (Test-Path $TempDir)) {
-        Remove-Item -Recurse -Force $TempDir
+
+    $Py = $null
+    foreach ($c in @("python", "python3", "py")) {
+        if (Get-Command $c -ErrorAction SilentlyContinue) { $Py = $c; break }
+    }
+    if (-not $Py) {
+        Write-Host "  ✗ Python 3.8+ est requis." -ForegroundColor Red
+        return
+    }
+    $Version = & $Py -c "import sys;print(f'{sys.version_info.major}.{sys.version_info.minor}')"
+    Write-Host "  ✓ Python $Version"
+
+    if (Get-Command node -ErrorAction SilentlyContinue) {
+        Write-Host "  ✓ Node $(node -v)"
+    } else {
+        Write-Host "  ! Node absent — les MCP en npx ne démarreront pas." -ForegroundColor Yellow
+    }
+
+    # ─── Récupération ─────────────────────────────────────────────
+    $Tempo = Join-Path ([System.IO.Path]::GetTempPath()) ("seo-dcp-" + [guid]::NewGuid())
+    New-Item -ItemType Directory -Path $Tempo -Force | Out-Null
+
+    try {
+        Write-Host ""
+        Write-Host "  ↓ Téléchargement…"
+        $Src = Join-Path $Tempo "source"
+        if (Test-Path (Join-Path $PSScriptRoot ".claude-plugin\plugin.json")) {
+            Copy-Item -Recurse -Force $PSScriptRoot $Src
+        } else {
+            git clone --depth 1 --quiet $Depot $Src
+        }
+
+        # ─── Installation ─────────────────────────────────────────
+        Write-Host "  → Skills…"
+        $DossierSkills = Join-Path $Claude "skills"
+        New-Item -ItemType Directory -Path $DossierSkills -Force | Out-Null
+        $Skills = Get-ChildItem (Join-Path $Src "skills") -Directory
+        foreach ($s in $Skills) {
+            $Cible = Join-Path $DossierSkills $s.Name
+            New-Item -ItemType Directory -Path $Cible -Force | Out-Null
+            Copy-Item -Recurse -Force (Join-Path $s.FullName "*") $Cible
+        }
+        Write-Host "    $($Skills.Count) skills"
+
+        Write-Host "  → Agents…"
+        $DossierAgents = Join-Path $Claude "agents"
+        New-Item -ItemType Directory -Path $DossierAgents -Force | Out-Null
+        Copy-Item -Force (Join-Path $Src "agents\*.md") $DossierAgents -ErrorAction SilentlyContinue
+
+        Write-Host "  → Commandes…"
+        $DossierCmd = Join-Path $Claude "commands"
+        New-Item -ItemType Directory -Path $DossierCmd -Force | Out-Null
+        Copy-Item -Force (Join-Path $Src "commands\*.md") $DossierCmd -ErrorAction SilentlyContinue
+
+        Write-Host "  → Scripts, config et modèles…"
+        New-Item -ItemType Directory -Path $Racine -Force | Out-Null
+        foreach ($e in @("scripts", "config", "schema", "templates", "hooks", "docs")) {
+            $Chemin = Join-Path $Src $e
+            if (Test-Path $Chemin) { Copy-Item -Recurse -Force $Chemin $Racine }
+        }
+        Copy-Item -Force (Join-Path $Src "requirements.txt") $Racine -ErrorAction SilentlyContinue
+        Copy-Item -Force (Join-Path $Src ".mcp.json") $Racine -ErrorAction SilentlyContinue
+
+        # ─── Dépendances Python ───────────────────────────────────
+        Write-Host "  → Dépendances Python…"
+        $Venv = Join-Path $Racine ".venv"
+        $Reqs = Join-Path $Racine "requirements.txt"
+        & $Py -m venv $Venv 2>$null
+        $VenvPip = Join-Path $Venv "Scripts\pip.exe"
+        if (Test-Path $VenvPip) {
+            & $VenvPip install --quiet -r $Reqs 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "    ✓ installées dans $Venv"
+            } else {
+                Write-Host "    ! échec. Relancez : $VenvPip install -r $Reqs" -ForegroundColor Yellow
+            }
+        } else {
+            & $Py -m pip install --quiet --user -r $Reqs 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "    ✓ installées (--user)"
+            } else {
+                Write-Host "    ! échec. Relancez : $Py -m pip install --user -r $Reqs" -ForegroundColor Yellow
+            }
+        }
+
+        # ─── Config utilisateur ───────────────────────────────────
+        $Env = Join-Path $Racine ".env"
+        $Modele = Join-Path $Racine "config\.env.example"
+        if ((-not (Test-Path $Env)) -and (Test-Path $Modele)) {
+            Copy-Item $Modele $Env
+            Write-Host "  → Modèle de configuration créé : $Env"
+        }
+
+        Write-Host ""
+        Write-Host "  ✓ Installé." -ForegroundColor Green
+        Write-Host ""
+        Write-Host "  Prochaine étape — dans Claude Code :"
+        Write-Host ""
+        Write-Host "      /seo doctor"
+        Write-Host ""
+        Write-Host "  Il vous dira quoi brancher, dans quel ordre, et lancera"
+        Write-Host "  la première action utile."
+        Write-Host ""
+        Write-Host "  Configuration : $Env"
+        Write-Host "  Documentation : $Racine\docs\"
+        Write-Host ""
+    }
+    finally {
+        Remove-Item -Recurse -Force $Tempo -ErrorAction SilentlyContinue
     }
 }
 
-Write-Host ""
-Write-Host "✓ Claude SEO installed successfully!" -ForegroundColor Green
-Write-Host ""
-Write-Host "Usage:" -ForegroundColor Cyan
-Write-Host "  1. Start Claude Code:  claude"
-Write-Host "  2. Run commands:       /seo audit https://example.com"
-Write-Host ""
-Write-Host "Python deps location: $installedReqFile" -ForegroundColor Gray
+Install-SeoDecupler

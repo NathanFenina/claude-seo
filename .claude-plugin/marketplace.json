@@ -1,0 +1,21 @@
+{
+  "name": "decupler",
+  "owner": {
+    "name": "Décupler",
+    "url": "https://decupler.com"
+  },
+  "metadata": {
+    "description": "Marketplace Décupler — outillage SEO & GEO agentique pour Claude Code.",
+    "version": "2.0.0"
+  },
+  "plugins": [
+    {
+      "name": "claude-code-seo-decupler",
+      "source": "./",
+      "description": "40 skills SEO/GEO, 14 agents spécialisés, 13 MCP préconfigurés. De l'audit à la publication, en autonomie.",
+      "version": "2.0.0",
+      "category": "seo",
+      "keywords": ["seo", "geo", "aeo", "content", "netlinking", "technique"]
+    }
+  ]
+}

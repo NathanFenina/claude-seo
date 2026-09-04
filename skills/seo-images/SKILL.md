@@ -1,168 +1,149 @@
 ---
 name: seo-images
 description: >
-  Image optimization analysis for SEO and performance. Checks alt text, file
-  sizes, formats, responsive images, lazy loading, and CLS prevention. Use when
-  user says "image optimization", "alt text", "image SEO", "image size",
-  or "image audit".
+  Audite et optimise les images : poids, formats modernes, dimensions, alt,
+  lazy loading, nommage, impact sur le LCP et le CLS, sitemap images, schema
+  ImageObject. Déclencher sur "images", "optimiser mes images", "alt", "poids
+  des images", "WebP", "AVIF", "SEO images", "Google Images", "mes images sont
+  trop lourdes", "lazy loading".
 ---
 
-# Image Optimization Analysis
+# Images — le poids mort le plus facile à corriger
 
-## Checks
+Sur la plupart des sites, les images représentent 60 à 75 % du poids des
+pages et sont responsables de l'essentiel du LCP dégradé. C'est aussi le
+chantier le plus mécanique : les gains sont garantis.
 
-### Alt Text
-- Present on all `<img>` elements (except decorative: `role="presentation"`)
-- Descriptive: describes the image content, not "image.jpg" or "photo"
-- Includes relevant keywords where natural, not keyword-stuffed
-- Length: 10-125 characters
+## L'audit
 
-**Good examples:**
-- "Professional plumber repairing kitchen sink faucet"
-- "Red 2024 Toyota Camry sedan front view"
-- "Team meeting in modern office conference room"
+```bash
+python3 scripts/audit_images.py <url>
+```
 
-**Bad examples:**
-- "image.jpg" (filename, not description)
-- "plumber plumbing plumber services" (keyword stuffing)
-- "Click here" (not descriptive)
+Par image : URL, format, poids, dimensions réelles, dimensions affichées,
+présence de `alt`, `width`/`height`, `loading`, position dans la page.
 
-### File Size
+## Les 8 points de contrôle
 
-**Tiered thresholds by image category:**
+### 1. Le format
+| Format | Usage |
+|--------|-------|
+| **AVIF** | Meilleure compression. ~50 % plus léger que JPEG à qualité égale |
+| **WebP** | Le bon défaut. Support universel, 25-35 % plus léger que JPEG |
+| **JPEG** | Repli photo |
+| **PNG** | Uniquement si transparence nécessaire. Lourd |
+| **SVG** | Logos, icônes, schémas. Vectoriel, léger, net à toute taille |
 
-| Image Category | Target | Warning | Critical |
-|----------------|--------|---------|----------|
-| Thumbnails | < 50KB | > 100KB | > 200KB |
-| Content images | < 100KB | > 200KB | > 500KB |
-| Hero/banner images | < 200KB | > 300KB | > 700KB |
-
-Recommend compression to target thresholds where possible without quality loss.
-
-### Format
-| Format | Browser Support | Use Case |
-|--------|-----------------|----------|
-| WebP | 97%+ | Default recommendation |
-| AVIF | 92%+ | Best compression, newer |
-| JPEG | 100% | Fallback for photos |
-| PNG | 100% | Graphics with transparency |
-| SVG | 100% | Icons, logos, illustrations |
-
-Recommend WebP/AVIF over JPEG/PNG. Check for `<picture>` element with format fallbacks.
-
-#### Recommended `<picture>` Element Pattern
-
-Use progressive enhancement with the most efficient format first:
-
+Servez plusieurs formats avec repli :
 ```html
 <picture>
-  <source srcset="image.avif" type="image/avif">
-  <source srcset="image.webp" type="image/webp">
-  <img src="image.jpg" alt="Descriptive alt text" width="800" height="600" loading="lazy" decoding="async">
+  <source srcset="photo.avif" type="image/avif">
+  <source srcset="photo.webp" type="image/webp">
+  <img src="photo.jpg" alt="…" width="1200" height="800">
 </picture>
 ```
 
-The browser will use the first supported format. Current browser support: AVIF 93.8%, WebP 95.3%.
+### 2. Le poids
+Cible : **< 150 Ko** pour une image de contenu, < 250 Ko pour un hero.
 
-#### JPEG XL — Emerging Format
+Le gaspillage typique : une photo de 3 000 px de large affichée dans un
+conteneur de 600 px. Redimensionnez **avant** de compresser — c'est là que
+se trouvent 80 % des gains.
 
-In November 2025, Google's Chromium team reversed its 2022 decision and announced it will restore JPEG XL support in Chrome using a Rust-based decoder. The implementation is feature-complete but not yet in Chrome stable. JPEG XL offers lossless JPEG recompression (~20% savings with zero quality loss) and competitive lossy compression. Not yet practical for web deployment, but worth monitoring for future adoption.
-
-### Responsive Images
-- `srcset` attribute for multiple sizes
-- `sizes` attribute matching layout breakpoints
-- Appropriate resolution for device pixel ratios
-
+### 3. Le responsive
 ```html
-<img
-  src="image-800.jpg"
-  srcset="image-400.jpg 400w, image-800.jpg 800w, image-1200.jpg 1200w"
-  sizes="(max-width: 600px) 400px, (max-width: 1200px) 800px, 1200px"
-  alt="Description"
->
+<img src="photo-800.webp"
+     srcset="photo-400.webp 400w, photo-800.webp 800w, photo-1600.webp 1600w"
+     sizes="(max-width: 600px) 100vw, 800px"
+     alt="…" width="800" height="533">
+```
+Un mobile ne doit jamais télécharger l'image desktop.
+
+### 4. Dimensions explicites — pour le CLS
+`width` et `height` **toujours** présents, même avec du CSS responsive. Ils
+permettent au navigateur de réserver l'espace avant le chargement. Sans eux,
+la page saute : c'est la première cause de CLS dégradé.
+
+### 5. Lazy loading — attention au piège
+```html
+<img loading="lazy">   <!-- images sous la ligne de flottaison -->
+<img fetchpriority="high">  <!-- image LCP : jamais lazy -->
 ```
 
-### Lazy Loading
-- `loading="lazy"` on below-fold images
-- Do NOT lazy-load above-fold/hero images (hurts LCP)
-- Check for native vs JavaScript-based lazy loading
+Mettre `loading="lazy"` sur l'image du hero retarde le LCP de plusieurs
+centaines de millisecondes. C'est l'erreur la plus fréquente depuis que le
+lazy loading est passé en natif — beaucoup de plugins l'appliquent
+aveuglément à toutes les images.
 
-```html
-<!-- Below fold - lazy load -->
-<img src="photo.jpg" loading="lazy" alt="Description">
+### 6. Le texte alternatif
+Décrivez l'image, pour quelqu'un qui ne la voit pas.
 
-<!-- Above fold - eager load (default) -->
-<img src="hero.jpg" alt="Hero image">
+| ❌ | ✅ |
+|----|-----|
+| `alt="image1"` | `alt="Plombier remplaçant un joint sous un évier"` |
+| `alt="plombier lyon plombier pas cher plombier urgence"` | `alt="Intervention de dépannage sur une fuite de chauffe-eau"` |
+| `alt=""` sur une image informative | Une description réelle |
+| Une description sur une image décorative | `alt=""` (correct : le lecteur d'écran l'ignore) |
+
+Le `alt` sert d'abord l'accessibilité. Le bénéfice SEO en découle. Un `alt`
+bourré de mots-clés est à la fois inutile en SEO et hostile aux utilisateurs
+de lecteurs d'écran.
+
+### 7. Le nom de fichier
+`plombier-remplacement-joint-evier.webp`, pas `IMG_4837.jpg`. Minuscules,
+tirets, descriptif. Signal faible mais gratuit, et utile dans Google Images.
+
+### 8. Le contexte
+Google comprend une image par ce qui l'entoure : la légende, le paragraphe
+qui la précède, le titre de la section. Une image placée dans un contexte
+cohérent est mieux indexée qu'une image isolée.
+
+## Le hero — traitement particulier
+
+C'est presque toujours l'élément LCP. Checklist :
+
+- [ ] Format moderne, compressé
+- [ ] Dimensionné à la taille réellement affichée
+- [ ] `fetchpriority="high"`
+- [ ] **Pas** de `loading="lazy"`
+- [ ] `<link rel="preload" as="image">` dans le `<head>` si chargée par CSS
+- [ ] `width` et `height` explicites
+- [ ] Pas de carrousel — un carrousel charge plusieurs images pour n'en
+      montrer qu'une, et détruit le LCP
+
+## Sitemap images et Google Images
+
+Pour un site où l'image compte (immobilier, e-commerce, recettes, tourisme),
+un sitemap images améliore la découverte :
+
+```xml
+<url>
+  <loc>https://exemple.com/page</loc>
+  <image:image>
+    <image:loc>https://exemple.com/photo.webp</image:loc>
+    <image:title>Titre descriptif</image:title>
+  </image:image>
+</url>
 ```
 
-### `fetchpriority="high"` for LCP Images
+Et le schema `ImageObject` avec `license` et `creditText` si vous voulez
+apparaître avec les informations de licence dans Google Images.
 
-Add `fetchpriority="high"` to your hero/LCP image to prioritize its download in the browser's network queue:
+## Ce que l'automatisation peut faire
 
-```html
-<img src="hero.webp" fetchpriority="high" alt="Hero image description" width="1200" height="630">
-```
+Si le repo est accessible :
+- Conversion en WebP/AVIF avec repli
+- Redimensionnement et génération des jeux `srcset`
+- Ajout des `width`/`height` manquants depuis les dimensions réelles
+- Correction du `loading` selon la position dans la page
+- Correction des noms de fichiers, avec les redirections associées
 
-**Critical:** Do NOT lazy-load above-the-fold/LCP images. Using `loading="lazy"` on LCP images directly harms LCP scores. Reserve `loading="lazy"` for below-the-fold images only.
+Ce qui reste manuel : **rédiger les `alt`**. Ils demandent de savoir ce que
+l'image montre et pourquoi elle est là. Proposez-les, faites-les valider.
 
-### `decoding="async"` for Non-LCP Images
+## Livrables
 
-Add `decoding="async"` to non-LCP images to prevent image decoding from blocking the main thread:
-
-```html
-<img src="photo.webp" alt="Description" width="600" height="400" loading="lazy" decoding="async">
-```
-
-### CLS Prevention
-- `width` and `height` attributes set on all `<img>` elements
-- `aspect-ratio` CSS as alternative
-- Flag images without dimensions
-
-```html
-<!-- Good - dimensions set -->
-<img src="photo.jpg" width="800" height="600" alt="Description">
-
-<!-- Good - CSS aspect ratio -->
-<img src="photo.jpg" style="aspect-ratio: 4/3" alt="Description">
-
-<!-- Bad - no dimensions -->
-<img src="photo.jpg" alt="Description">
-```
-
-### File Names
-- Descriptive: `blue-running-shoes.webp` not `IMG_1234.jpg`
-- Hyphenated, lowercase, no special characters
-- Include relevant keywords
-
-### CDN Usage
-- Check if images served from CDN (different domain, CDN headers)
-- Recommend CDN for image-heavy sites
-- Check for edge caching headers
-
-## Output
-
-### Image Audit Summary
-
-| Metric | Status | Count |
-|--------|--------|-------|
-| Total Images | - | XX |
-| Missing Alt Text | ❌ | XX |
-| Oversized (>200KB) | ⚠️ | XX |
-| Wrong Format | ⚠️ | XX |
-| No Dimensions | ⚠️ | XX |
-| Not Lazy Loaded | ⚠️ | XX |
-
-### Prioritized Optimization List
-
-Sorted by file size impact (largest savings first):
-
-| Image | Current Size | Format | Issues | Est. Savings |
-|-------|--------------|--------|--------|--------------|
-| ... | ... | ... | ... | ... |
-
-### Recommendations
-1. Convert X images to WebP format (est. XX KB savings)
-2. Add alt text to X images
-3. Add dimensions to X images
-4. Enable lazy loading on X below-fold images
-5. Compress X oversized images
+- `IMAGES-AUDIT.md` — inventaire, poids total, gains estimés
+- `images.csv` — par image : problèmes, correctif
+- `images-optimisees/` — les fichiers convertis
+- `alt-a-valider.csv` — les textes alternatifs proposés

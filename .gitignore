@@ -1,49 +1,64 @@
-# Generated output
-output/
-.planning/
-*.tmp
-*.bak
-*.swp
+# Secrets — ne jamais commiter
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*-service-account.json
 
-# OS files
-.DS_Store
-Thumbs.db
+# Sorties générées
+seo-output/
+.seo-decupler/
+*.csv
+!config/*.csv
+!templates/*.csv
+crawl.csv
+quick-wins.csv
+releves-*.csv
+historique-*.csv
+dashboard-*.html
+prompts.csv
 
-# IDE files
-.vscode/
-.idea/
-*.sublime-*
+# Rapports générés
+*-AUDIT-*.md
+*-RAPPORT.md
+PLAN-ACTION.md
+rapports/
+veille/
 
 # Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
 .pytest_cache/
 .mypy_cache/
-*.egg-info/
-dist/
-build/
-.eggs/
 
-# Virtual environments
-venv/
-.venv/
-env/
-.env/
-
-# Node (if any)
+# Node
 node_modules/
 
-# Logs
-*.log
+# Captures et médias générés
+screenshots/
+captures/
 
-# Archives (don't commit zips)
+# Système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Éditeurs
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+*.bak
+*.tmp
+
+# Archives
 *.zip
 *.tar.gz
 
-# Screenshots (generated during analysis)
-screenshots/
-
-# Temporary analysis files
-*-AUDIT-REPORT.md
-*-ACTION-PLAN.md
+# Logs
+*.log

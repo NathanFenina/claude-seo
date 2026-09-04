@@ -1,117 +1,115 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Claude SEO Installer
-# Wraps everything in main() to prevent partial execution on network failure
+# ══════════════════════════════════════════════════════════════════
+#  Claude Code SEO Décupler — installation
+#  https://github.com/NathanFenina/claude-seo
+# ══════════════════════════════════════════════════════════════════
+#
+# Tout est enveloppé dans main() pour qu'une coupure réseau pendant un
+# `curl | bash` n'exécute jamais une moitié de script.
 
 main() {
-    SKILL_DIR="${HOME}/.claude/skills/seo"
-    AGENT_DIR="${HOME}/.claude/agents"
-    REPO_URL="https://github.com/AgriciDaniel/claude-seo"
+    local DEPOT="https://github.com/NathanFenina/claude-seo"
+    local CLAUDE="${HOME}/.claude"
+    local RACINE="${CLAUDE}/seo-decupler"
 
-    echo "════════════════════════════════════════"
-    echo "║   Claude SEO - Installer             ║"
-    echo "║   Claude Code SEO Skill              ║"
-    echo "════════════════════════════════════════"
-    echo ""
+    printf '\n'
+    printf '  ╔════════════════════════════════════════════════╗\n'
+    printf '  ║   Claude Code SEO Décupler                     ║\n'
+    printf '  ║   36 skills · 14 agents · 13 MCP               ║\n'
+    printf '  ╚════════════════════════════════════════════════╝\n\n'
 
-    # Check prerequisites
-    command -v python3 >/dev/null 2>&1 || { echo "✗ Python 3 is required but not installed."; exit 1; }
-    command -v git >/dev/null 2>&1 || { echo "✗ Git is required but not installed."; exit 1; }
+    # ─── Prérequis ────────────────────────────────────────────────
+    command -v git >/dev/null 2>&1 || {
+        printf '  ✗ Git est requis. Installez-le puis relancez.\n\n'; exit 1; }
 
-    # Check Python version
-    PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-    echo "✓ Python ${PYTHON_VERSION} detected"
+    local PY=""
+    for candidat in python3 python; do
+        if command -v "${candidat}" >/dev/null 2>&1; then PY="${candidat}"; break; fi
+    done
+    [ -n "${PY}" ] || { printf '  ✗ Python 3.8+ est requis.\n\n'; exit 1; }
 
-    # Create directories
-    mkdir -p "${SKILL_DIR}"
-    mkdir -p "${AGENT_DIR}"
+    printf '  ✓ Python %s\n' "$(${PY} -c 'import sys;print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+    command -v node >/dev/null 2>&1 \
+        && printf '  ✓ Node %s\n' "$(node -v)" \
+        || printf '  ! Node absent — les MCP en npx ne démarreront pas.\n'
 
-    # Clone or update
-    TEMP_DIR=$(mktemp -d)
-    trap "rm -rf ${TEMP_DIR}" EXIT
+    # ─── Récupération ─────────────────────────────────────────────
+    local TEMPO
+    TEMPO="$(mktemp -d)"
+    trap 'rm -rf "${TEMPO}"' EXIT
 
-    echo "↓ Downloading Claude SEO..."
-    git clone --depth 1 "${REPO_URL}" "${TEMP_DIR}/claude-seo" 2>/dev/null
-
-    # Copy skill files
-    echo "→ Installing skill files..."
-    cp -r "${TEMP_DIR}/claude-seo/seo/"* "${SKILL_DIR}/"
-
-    # Copy sub-skills
-    if [ -d "${TEMP_DIR}/claude-seo/skills" ]; then
-        for skill_dir in "${TEMP_DIR}/claude-seo/skills"/*/; do
-            skill_name=$(basename "${skill_dir}")
-            target="${HOME}/.claude/skills/${skill_name}"
-            mkdir -p "${target}"
-            cp -r "${skill_dir}"* "${target}/"
-        done
-    fi
-
-    # Copy schema templates
-    if [ -d "${TEMP_DIR}/claude-seo/schema" ]; then
-        mkdir -p "${SKILL_DIR}/schema"
-        cp -r "${TEMP_DIR}/claude-seo/schema/"* "${SKILL_DIR}/schema/"
-    fi
-
-    # Copy reference docs
-    if [ -d "${TEMP_DIR}/claude-seo/pdf" ]; then
-        mkdir -p "${SKILL_DIR}/pdf"
-        cp -r "${TEMP_DIR}/claude-seo/pdf/"* "${SKILL_DIR}/pdf/"
-    fi
-
-    # Copy agents
-    echo "→ Installing subagents..."
-    cp -r "${TEMP_DIR}/claude-seo/agents/"*.md "${AGENT_DIR}/" 2>/dev/null || true
-
-    # Copy shared scripts
-    if [ -d "${TEMP_DIR}/claude-seo/scripts" ]; then
-        mkdir -p "${SKILL_DIR}/scripts"
-        cp -r "${TEMP_DIR}/claude-seo/scripts/"* "${SKILL_DIR}/scripts/"
-    fi
-
-    # Copy hooks
-    if [ -d "${TEMP_DIR}/claude-seo/hooks" ]; then
-        mkdir -p "${SKILL_DIR}/hooks"
-        cp -r "${TEMP_DIR}/claude-seo/hooks/"* "${SKILL_DIR}/hooks/"
-        chmod +x "${SKILL_DIR}/hooks/"*.sh 2>/dev/null || true
-        chmod +x "${SKILL_DIR}/hooks/"*.py 2>/dev/null || true
-    fi
-
-    # Copy requirements.txt to skill dir so users can retry later
-    cp "${TEMP_DIR}/claude-seo/requirements.txt" "${SKILL_DIR}/requirements.txt" 2>/dev/null || true
-
-    # Install Python dependencies (venv preferred, --user fallback)
-    echo "→ Installing Python dependencies..."
-    VENV_DIR="${SKILL_DIR}/.venv"
-    if python3 -m venv "${VENV_DIR}" 2>/dev/null; then
-        "${VENV_DIR}/bin/pip" install --quiet -r "${TEMP_DIR}/claude-seo/requirements.txt" 2>/dev/null && \
-            echo "  ✓ Installed in venv at ${VENV_DIR}" || \
-            echo "  ⚠  Venv pip install failed. Run: ${VENV_DIR}/bin/pip install -r ${SKILL_DIR}/requirements.txt"
+    printf '\n  ↓ Téléchargement…\n'
+    if [ -f "$(dirname "$0")/.claude-plugin/plugin.json" ]; then
+        # Lancé depuis un clone local : on installe depuis les fichiers présents.
+        cp -R "$(dirname "$0")" "${TEMPO}/source"
     else
-        pip install --quiet --user -r "${TEMP_DIR}/claude-seo/requirements.txt" 2>/dev/null || \
-        echo "  ⚠  Could not auto-install. Run: pip install --user -r ${SKILL_DIR}/requirements.txt"
+        git clone --depth 1 --quiet "${DEPOT}" "${TEMPO}/source"
     fi
+    local SRC="${TEMPO}/source"
 
-    # Optional: Install Playwright browsers (for screenshot analysis)
-    echo "→ Installing Playwright browsers (optional, for visual analysis)..."
-    if [ -f "${VENV_DIR}/bin/playwright" ]; then
-        "${VENV_DIR}/bin/python" -m playwright install chromium 2>/dev/null || \
-        echo "  ⚠  Playwright install failed. Visual analysis will use WebFetch fallback."
+    # ─── Installation ─────────────────────────────────────────────
+    printf '  → Skills…\n'
+    mkdir -p "${CLAUDE}/skills"
+    for dossier in "${SRC}"/skills/*/; do
+        [ -d "${dossier}" ] || continue
+        local nom; nom="$(basename "${dossier}")"
+        mkdir -p "${CLAUDE}/skills/${nom}"
+        cp -R "${dossier}." "${CLAUDE}/skills/${nom}/"
+    done
+    printf '    %s skills\n' "$(find "${SRC}/skills" -maxdepth 1 -mindepth 1 -type d | wc -l | tr -d ' ')"
+
+    printf '  → Agents…\n'
+    mkdir -p "${CLAUDE}/agents"
+    cp "${SRC}"/agents/*.md "${CLAUDE}/agents/" 2>/dev/null || true
+
+    printf '  → Commandes…\n'
+    mkdir -p "${CLAUDE}/commands"
+    cp "${SRC}"/commands/*.md "${CLAUDE}/commands/" 2>/dev/null || true
+
+    printf '  → Scripts, config et modèles…\n'
+    mkdir -p "${RACINE}"
+    for element in scripts config schema templates hooks docs; do
+        [ -d "${SRC}/${element}" ] && cp -R "${SRC}/${element}" "${RACINE}/"
+    done
+    cp "${SRC}/requirements.txt" "${RACINE}/" 2>/dev/null || true
+    cp "${SRC}/.mcp.json" "${RACINE}/" 2>/dev/null || true
+    chmod +x "${RACINE}"/scripts/*.py 2>/dev/null || true
+    chmod +x "${RACINE}"/hooks/*.sh 2>/dev/null || true
+
+    # ─── Dépendances Python ───────────────────────────────────────
+    printf '  → Dépendances Python…\n'
+    local VENV="${RACINE}/.venv"
+    if ${PY} -m venv "${VENV}" 2>/dev/null && [ -x "${VENV}/bin/pip" ]; then
+        if "${VENV}/bin/pip" install --quiet --upgrade pip >/dev/null 2>&1 \
+           && "${VENV}/bin/pip" install --quiet -r "${RACINE}/requirements.txt" >/dev/null 2>&1; then
+            printf '    ✓ installées dans %s\n' "${VENV}"
+        else
+            printf '    ! échec. Relancez : %s/bin/pip install -r %s/requirements.txt\n' \
+                   "${VENV}" "${RACINE}"
+        fi
     else
-        python3 -m playwright install chromium 2>/dev/null || \
-        echo "  ⚠  Playwright install failed. Visual analysis will use WebFetch fallback."
+        ${PY} -m pip install --quiet --user -r "${RACINE}/requirements.txt" 2>/dev/null \
+            && printf '    ✓ installées (--user)\n' \
+            || printf '    ! échec. Relancez : pip install --user -r %s/requirements.txt\n' "${RACINE}"
     fi
 
-    echo ""
-    echo "✓ Claude SEO installed successfully!"
-    echo ""
-    echo "Usage:"
-    echo "  1. Start Claude Code:  claude"
-    echo "  2. Run commands:       /seo audit https://example.com"
-    echo ""
-    echo "Python deps location: ${SKILL_DIR}/requirements.txt"
-    echo "To uninstall: curl -fsSL ${REPO_URL}/raw/main/uninstall.sh | bash"
+    # ─── Fichier de config utilisateur ────────────────────────────
+    if [ ! -f "${RACINE}/.env" ] && [ -f "${RACINE}/config/.env.example" ]; then
+        cp "${RACINE}/config/.env.example" "${RACINE}/.env"
+        printf '  → Modèle de configuration créé : %s/.env\n' "${RACINE}"
+    fi
+
+    # ─── Fin ──────────────────────────────────────────────────────
+    printf '\n'
+    printf '  ✓ Installé.\n\n'
+    printf '  Prochaine étape — dans Claude Code :\n\n'
+    printf '      /seo doctor\n\n'
+    printf '  Il vous dira quoi brancher, dans quel ordre, et lancera\n'
+    printf '  la première action utile.\n\n'
+    printf '  Configuration : %s/.env\n' "${RACINE}"
+    printf '  Documentation : %s/docs/\n\n' "${RACINE}"
 }
 
 main "$@"

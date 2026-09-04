@@ -1,23 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-main() {
-    echo "→ Uninstalling Claude SEO..."
+# Désinstallation de Claude Code SEO Décupler.
+# Ne touche jamais à vos sorties (seo-output/) ni à votre .env.
 
-    # Remove main skill (includes venv and requirements.txt)
-    rm -rf "${HOME}/.claude/skills/seo"
+CLAUDE="${HOME}/.claude"
+RACINE="${CLAUDE}/seo-decupler"
 
-    # Remove sub-skills
-    for skill in seo-audit seo-competitor-pages seo-content seo-geo seo-hreflang seo-images seo-page seo-plan seo-programmatic seo-schema seo-sitemap seo-technical; do
-        rm -rf "${HOME}/.claude/skills/${skill}"
-    done
+printf '\n  Désinstallation de Claude Code SEO Décupler\n\n'
 
-    # Remove agents
-    for agent in seo-technical seo-content seo-schema seo-sitemap seo-performance seo-visual; do
-        rm -f "${HOME}/.claude/agents/${agent}.md"
-    done
+# On ne supprime que les skills du dispositif, jamais les vôtres.
+SUPPRIMES=0
+for dossier in "${CLAUDE}"/skills/seo-* "${CLAUDE}"/skills/geo-*; do
+    [ -d "${dossier}" ] || continue
+    rm -rf "${dossier}"
+    SUPPRIMES=$((SUPPRIMES + 1))
+done
+printf '  → %s skills supprimés\n' "${SUPPRIMES}"
 
-    echo "✓ Claude SEO uninstalled."
-}
+for agent in seo-technique seo-performance seo-contenu seo-redacteur seo-data \
+             seo-serp seo-schema seo-geo seo-netlinking seo-frontend \
+             seo-crawler seo-strategiste seo-publisher seo-analyste-concurrence; do
+    rm -f "${CLAUDE}/agents/${agent}.md"
+done
+printf '  → agents supprimés\n'
 
-main "$@"
+rm -f "${CLAUDE}"/commands/seo.md "${CLAUDE}"/commands/seo-*.md
+printf '  → commandes supprimées\n'
+
+if [ -f "${RACINE}/.env" ]; then
+    printf '\n  ⚠️  %s/.env contient vos clés API.\n' "${RACINE}"
+    printf '     Il est conservé. Supprimez-le vous-même si vous le souhaitez :\n'
+    printf '     rm -rf %s\n' "${RACINE}"
+else
+    rm -rf "${RACINE}"
+    printf '  → scripts et configuration supprimés\n'
+fi
+
+printf '\n  ✓ Désinstallé.\n\n'
