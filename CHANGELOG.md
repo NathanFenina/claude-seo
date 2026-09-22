@@ -1,5 +1,29 @@
 # Journal des versions
 
+## 2.1.0 — Skills client
+
+### Ajouté
+
+**`clients/techmedias/`** — premier jeu de skills spécifiques à un mandat :
+`techmedias-redaction-seo` et `techmedias-optimisation-seo`. Les skills génériques
+`seo-redaction` et `seo-optimisation-onpage` restent la référence par défaut ; ceux-ci
+prennent le relais sur un client dont le pipeline n'est pas un CMS classique
+(générateur statique bilingue + blocs Gutenberg générés, chiffres restreints à une
+liste fermée, parité FR/EN bloquante).
+
+### Corrigé
+
+**Découpage en phrases dans la mesure de lisibilité.** Le script d'analyse remplaçait
+chaque balise par une espace : un titre de carte sans ponctuation finale se collait au
+paragraphe suivant et fabriquait une fausse phrase de 40 mots. Sur les 5 pages
+TechMedias, la part de « phrases longues » passait de **45–52 % à 12–15 %** une fois
+les frontières de bloc prises en compte — toute la catégorie lisibilité était rouge à
+tort. Le correctif est dans `clients/techmedias/techmedias-optimisation-seo/scripts/`
+et concerne tout gabarit à base de cartes : il a vocation à remonter dans l'outillage
+générique.
+
+---
+
 ## 2.0.0 — Claude Code SEO Décupler
 
 Refonte complète. Le dépôt devient un dispositif SEO + GEO agentique et
