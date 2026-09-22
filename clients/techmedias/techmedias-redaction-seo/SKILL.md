@@ -180,7 +180,210 @@ Signature par défaut : **Renaud Rosset**. Aucun compte utilisateur n'est créé
 
 ---
 
-## 6. Le maillage interne
+## 6. Les illustrations — obligatoires, et jamais décoratives
+
+Retour client du 22/09 : *« contenu assez faible et pas assez world class, ça manque
+cruellement d'image »*. Le diagnostic était juste — les pages n'avaient qu'un visuel de
+hero abstrait, réutilisé d'une autre section, et aucun schéma dans le corps.
+
+**Un contenu B2B sans figure se fait survoler.** Un comité d'achat ne lit pas 1 500 mots :
+il cherche le schéma qui résume l'arbitrage, et le transmet en interne. Une page ou un
+article sans illustration porteuse d'information n'est pas terminé.
+
+### La règle
+
+> **Toute page et tout article porte au moins un schéma, et ce schéma dit quelque chose
+> que le texte ne dit pas mieux.** Si la figure ne fait que répéter un paragraphe, elle
+> ne doit pas exister : un visuel qui n'apporte rien alourdit la page.
+
+Aucun modèle de génération d'images n'est disponible dans cet environnement — et c'est
+sans importance, parce qu'une illustration décorative ne servirait à rien ici. Les
+schémas sont **rendus par code à partir du contenu réel**.
+
+### Comment produire un schéma
+
+```bash
+# 1. Décrire la figure — les DONNÉES, pas le dessin
+$EDITOR build/illustrations/figures.yml
+
+# 2. Rendre (HTML -> Chromium -> WebP + JPEG, 2400 px de large)
+cd build/illustrations && python3 render.py --only <id>
+#    -> deploy/htdocs/illustrations/schemas/<id>.{webp,jpg}
+```
+
+Les tokens de charte sont **lus dans `system.css` au moment du rendu** et les polices de
+marque embarquées depuis les woff2 du thème : aucune couleur ni police n'est recopiée,
+donc aucune dérive possible. Il n'y a rien à vérifier côté charte.
+
+### Les quatre gabarits disponibles
+
+| Gabarit | Sert à | Exemple en production |
+|---|---|---|
+| `steps` | Un processus ordonné, 3 ou 4 étapes | `methode-conseil`, `chaine-redaction` |
+| `columns` | Opposer 2 à 4 options sur les mêmes critères | `b2b-vs-b2c`, `owned-earned-paid` |
+| `cluster` | Un élément central et ses satellites | `cluster-semantique`, `carte-leviers` |
+| `funnel` | Des étapes de tunnel avec leur indicateur | `tunnel-kpi` |
+
+Un gabarit neuf s'ajoute dans `render.py` (fonction `layout_<nom>`), pas en écrivant du
+CSS dans le YAML.
+
+### Brancher la figure
+
+**Page de la vitrine** — le gabarit partagé porte un emplacement, entre la section
+« enjeu » et la méthode. Déclarer dans le YAML, FR **et** EN :
+
+```yaml
+figure:
+  id: comite-achat-b2b
+  height: 1620            # hauteur réelle du rendu — évite le décalage de mise en page
+  aria: "Le comité d'achat IT"
+  alt: "…"                # reprendre l'alt de figures.yml
+  caption: "…"            # ce que la figure démontre, pas ce qu'elle montre
+```
+
+**Article du blog** — déclarer `FIGURES` dans le module, et poser le marqueur à
+l'endroit voulu :
+
+```python
+FIGURES = [{"id": "b2b-vs-b2c", "alt": "…", "caption": "…"}]
+...
+    p("{{FIG:b2b-vs-b2c}}"),      # publish.py remplace le BLOC paragraphe entier
+```
+
+`publish.py` téléverse le fichier (idempotent) et substitue le bloc. ⚠️ Il remplace le
+bloc `wp:paragraph` complet, pas son texte : une `<figure>` dans un `<p>` est du HTML
+invalide, le navigateur ferme le paragraphe avant elle.
+
+### Ce qui fait une bonne légende
+
+La légende ne décrit pas l'image — le lecteur la voit. Elle dit **ce que la figure
+démontre** et ce qu'on en fait. « Tableau comparant le B2B et le B2C » est inutile ;
+« ignorer une seule de ces six contraintes suffit à rendre un dispositif inopérant »
+apporte quelque chose.
+
+L'attribut `alt`, lui, décrit bien le contenu : il sert au lecteur d'écran et au moteur.
+
+---
+
+## 7. Ne pas produire cinq fois la même page
+
+Retour client du 22/09, après les schémas : *« ça manque clairement de contenu, c'est un
+peu vide, et aussi les images, et faire tourner les chiffres, et casser la symétrie »*.
+
+Le diagnostic portait sur le gabarit, pas sur le volume. Les cinq pages d'offre sont
+rendues par `_seopage_body.html`, un template partagé — ce qui est un acquis : une
+correction de charte se fait une fois. Mais tant que chaque page ne remplissait que les
+mêmes emplacements dans le même ordre, avec les **mêmes trois chiffres**, le lecteur qui
+en ouvrait deux voyait un formulaire rempli deux fois. À 1 400 mots chacune, ce n'est pas
+un manque de texte : c'est un manque de **singularité**, et ça se lit comme du vide.
+
+> **Deux pages du même gabarit ne doivent jamais donner la même impression de lecture.**
+> Le gabarit est partagé ; ce qu'on y met ne l'est pas.
+
+### Règle 1 — un bloc propre à la page, d'un type que ses voisines n'ont pas
+
+Chaque page porte une section `spotlight`, placée avant les métriques. Ce n'est pas un
+bloc de plus à remplir : c'est **l'endroit où la page prouve qu'elle connaît son sujet**,
+sous une forme que les autres pages n'emploient pas.
+
+Les cinq types en production — en ajouter un nouveau plutôt que réemployer un existant :
+
+| Page | Type de bloc | Ce qu'il fait |
+|---|---|---|
+| Agence SEO B2B | Grille de diagnostic | Symptôme → ce qu'il révèle → ce qu'on change |
+| Conseil marketing digital | Tableau de livrables | Ce qui sort de chaque phase, et sous quelle forme |
+| Rédaction web | Référentiel de formats | Format → à quelle étape il sert → longueur réelle |
+| Content marketing | Aide à la décision | Internaliser ou déléguer, critère par critère |
+| Marketing IT | Routeur de points d'entrée | Votre situation → par où commencer |
+
+Structure dans le YAML (`columns` + `rows`, la première cellule de chaque ligne devient
+un `<th scope="row">`) :
+
+```yaml
+spotlight:
+  aria: "Le diagnostic d'entrée"
+  eyebrow: "— Le diagnostic"
+  title: 'Ce qu''on regarde <span class="accent">en premier</span>'
+  aside: "Une phrase qui situe le tableau."
+  lead: "Deux à quatre phrases qui posent le raisonnement AVANT le tableau."
+  columns: ["Le symptôme", "Ce qu'il révèle", "Ce qu'on change"]
+  rows:
+    - ["Du trafic, aucune demande", "…", "…"]
+  foot: "Optionnel — la nuance qui empêche de lire le tableau comme une recette."
+```
+
+⚠️ Le HTML dans une valeur YAML (`class="accent"`) casse le parseur s'il n'est pas
+échappé. Écris ces valeurs en guillemets simples avec doublement de l'apostrophe, comme
+ci-dessus, ou passe par un bloc littéral.
+
+### Règle 2 — faire tourner les chiffres
+
+Les métriques sont **différenciées d'une page à l'autre**. Le fonds de chiffres validés
+est petit et fermé (§1) : on n'en invente pas pour varier, on **choisit ceux qui servent
+l'angle de la page**. Une page rédaction met en avant les rubriques d'expertise ; une
+page conseil met en avant l'ancienneté. Aucun triplet ne doit apparaître deux fois.
+
+Vérification, à lancer avant de considérer un lot de pages terminé :
+
+```bash
+cd build && python3 -c "
+import yaml, io, glob, collections
+# Les pages hors sitemap (page de test en noindex) ne sont pas dans le jeu lu par
+# les prospects : elles ne comptent pas comme doublon.
+routes = yaml.safe_load(io.open('routes.yml', encoding='utf-8'))
+exclus = {p['id'] for p in routes['pages'] if p.get('sitemap_exclude')}
+vus = collections.defaultdict(list)
+for f in sorted(glob.glob('content/*.fr.yml')):
+    ident = f.split('/')[-1].split('.')[0]
+    if ident in exclus:
+        continue
+    d = yaml.safe_load(io.open(f, encoding='utf-8')) or {}
+    m = (d.get('metrics') or {}).get('entries')
+    if m:
+        # Comparaison sur l'ENSEMBLE des chiffres : réordonner trois chiffres
+        # identiques ne rend pas deux pages différentes.
+        vus[tuple(sorted(e['num'] for e in m))].append(ident)
+for chiffres, pages in sorted(vus.items()):
+    if len(pages) > 1:
+        print('DOUBLON', list(chiffres), '->', pages)
+print('pages indexables avec métriques :', sum(len(v) for v in vus.values()))
+"
+```
+
+Une ligne `DOUBLON` = deux pages qui se ressemblent. À corriger avant déploiement.
+
+Ce contrôle n'est pas théorique : écrit le 22/09, il a immédiatement sorti
+`agence-marketing-it` et `referencement-ia`, qui affichaient les mêmes trois chiffres
+**avec les mêmes libellés**. La page chapeau porte désormais l'audience, les 4 typologies
+servies et les 3 objectifs adressés — un angle d'accueil, pas une redite.
+
+### Règle 3 — deux figures, à deux moments de la lecture
+
+Une seule figure suffisait à respecter §6, pas à tenir une page de 1 700 mots. Chaque
+page d'offre en porte **deux**, séparées par plusieurs sections :
+
+- `figure` — après la section « enjeu », elle **cadre le problème** ;
+- `figure2` — avant le maillage interne, elle **récapitule la réponse** et reprend la
+  matière du `spotlight` sous forme visuelle.
+
+La seconde figure n'est pas un doublon de la première : si tu ne peux pas dire en une
+phrase ce qu'elle ajoute, la page n'a pas besoin d'elle.
+
+### Ce que ça a donné
+
+| | Avant | Après |
+|---|---|---|
+| Volume par page | 1 374 – 1 498 mots | 1 654 – 1 739 mots |
+| Sections H2 | 9 | 10 |
+| Images | 2 | 3 |
+| Triplets de chiffres distincts | 1 pour 5 pages | 5 pour 5 pages |
+
+Le gain de volume est une conséquence, pas l'objectif. L'objectif est qu'un lecteur qui
+ouvre deux pages y trouve deux raisonnements différents.
+
+---
+
+## 8. Le maillage interne
 
 Chaque contenu neuf doit **recevoir** et **émettre** des liens. Le gabarit de page
 offre 7 destinations : le 2e CTA du hero, le CTA de la section preuve, les 4 cartes de
@@ -211,7 +414,7 @@ un lien vers un brouillon non publié renvoie 404.
 
 ---
 
-## 7. La boucle de vérification (rien ne part sans)
+## 9. La boucle de vérification (rien ne part sans)
 
 ### Page
 
@@ -223,6 +426,9 @@ cd dist && python3 -m http.server 8899     # JAMAIS file:// (règle d'or n°1)
 ```
 
 Puis, avant de considérer la page finie :
+- **Le contrôle de doublons de chiffres de §7 doit sortir `doublons : 0`.**
+- La page porte bien **deux figures** et **un `spotlight` d'un type que ses voisines
+  n'emploient pas** — sinon elle ressemblera à la page d'à côté, quel que soit son texte.
 - `grep -nE '#[0-9a-fA-F]{3,6}|rgba?\(' build/templates/_seopage_head.html` → doit être vide.
 - Noms d'icônes Material Symbols validés (une icône inexistante s'affiche en texte brut
   sur la page live).
@@ -242,7 +448,7 @@ valide et sans markup résiduel, liens internes résolus.
 
 ---
 
-## 8. Déployer, c'est publier
+## 10. Déployer, c'est publier
 
 L'indexation est ouverte depuis le go-live SEO. **Un contenu poussé sur `main` est
 indexable dès la fin du run GitHub Actions** — il n'existe plus d'étape de preview.
