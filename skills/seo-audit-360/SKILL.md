@@ -20,8 +20,8 @@ problèmes trouvés, c'est **l'ordre dans lequel on les corrige**.
 ## Phase 0 — Cadrage (2 min)
 
 1. Lire `config/decupler-seo.config.yml` → section `projet`.
-2. `python3 scripts/doctor.py --json` → savoir avec quoi on travaille.
-3. Récupérer la page d'accueil : `python3 scripts/fetch_page.py <url>`.
+2. `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.py" --json` → savoir avec quoi on travaille.
+3. Récupérer la page d'accueil : `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fetch_page.py" <url>`.
 4. **Détecter le type de business** depuis la home. Ça change tout le reste :
 
 | Signaux détectés | Type | Ce qu'on regarde en priorité |
@@ -37,7 +37,7 @@ Un audit e-commerce qui parle de fraîcheur éditoriale est un audit raté.
 ## Phase 1 — Crawl (5-10 min)
 
 ```bash
-python3 scripts/crawl_site.py <url> --max 500 --respecter-robots
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/crawl_site.py" <url> --max 500 --respecter-robots
 ```
 
 Sort : inventaire des URL, codes HTTP, profondeur, titres, metas, Hn,

@@ -34,8 +34,8 @@ Ce dépôt branche tout ça dans Claude Code et enchaîne les étapes tout seul.
 ### Option 1 — Plugin Claude Code (recommandé)
 
 ```
-/plugin marketplace add NathanFenina/claude-seo
-/plugin install claude-code-seo-decupler@decupler
+/plugin marketplace add NathanFenina/decupler-seo
+/plugin install decupler-seo@decupler
 ```
 
 Skills, agents, commandes et MCP sont branchés d'un coup.
@@ -43,19 +43,19 @@ Skills, agents, commandes et MCP sont branchés d'un coup.
 ### Option 2 — Script d'installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NathanFenina/claude-seo/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/NathanFenina/decupler-seo/main/install.sh | bash
 ```
 
 Windows :
 ```powershell
-irm https://raw.githubusercontent.com/NathanFenina/claude-seo/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/NathanFenina/decupler-seo/main/install.ps1 | iex
 ```
 
 ### Option 3 — Manuelle
 
 ```bash
-git clone https://github.com/NathanFenina/claude-seo.git
-cd claude-seo
+git clone https://github.com/NathanFenina/decupler-seo.git
+cd decupler-seo
 ./install.sh
 ```
 

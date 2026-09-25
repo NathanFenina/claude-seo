@@ -1,7 +1,7 @@
 {
-  "name": "claude-code-seo-decupler",
+  "name": "decupler-seo",
   "displayName": "Claude Code SEO Décupler",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Machine de guerre SEO + GEO pour Claude Code. 40 skills, 14 agents, 13 MCP préconfigurés. Audite, corrige, rédige, publie et mesure — en autonomie.",
   "author": {
     "name": "Décupler",
@@ -26,7 +26,22 @@
     "agentique"
   ],
   "skills": "./skills",
-  "agents": "./agents",
+  "agents": [
+    "./agents/seo-analyste-concurrence.md",
+    "./agents/seo-contenu.md",
+    "./agents/seo-crawler.md",
+    "./agents/seo-data.md",
+    "./agents/seo-frontend.md",
+    "./agents/seo-geo.md",
+    "./agents/seo-netlinking.md",
+    "./agents/seo-performance.md",
+    "./agents/seo-publisher.md",
+    "./agents/seo-redacteur.md",
+    "./agents/seo-schema.md",
+    "./agents/seo-serp.md",
+    "./agents/seo-strategiste.md",
+    "./agents/seo-technique.md"
+  ],
   "commands": "./commands",
   "mcpServers": "./.mcp.json"
 }

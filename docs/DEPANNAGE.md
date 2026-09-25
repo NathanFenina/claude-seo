@@ -84,5 +84,5 @@
 ---
 
 Un problème qui n'est pas ici ?
-[Ouvrez une issue](https://github.com/NathanFenina/claude-seo/issues) avec la
+[Ouvrez une issue](https://github.com/NathanFenina/decupler-seo/issues) avec la
 sortie de `/seo doctor`.

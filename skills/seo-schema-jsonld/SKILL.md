@@ -32,7 +32,7 @@ ignorant les deux. C'est un cas très fréquent sur WordPress.
 ## Étape 2 — Valider
 
 ```bash
-python3 scripts/schema_validate.py <fichier|url>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/schema_validate.py" <fichier|url>
 ```
 
 Trois niveaux de validation :

@@ -7,8 +7,8 @@ Trois méthodes. La première est la plus simple.
 ## Méthode 1 — Plugin Claude Code
 
 ```
-/plugin marketplace add NathanFenina/claude-seo
-/plugin install claude-code-seo-decupler@decupler
+/plugin marketplace add NathanFenina/decupler-seo
+/plugin install decupler-seo@decupler
 ```
 
 Skills, agents, commandes et déclarations MCP sont branchés en une fois.
@@ -24,12 +24,12 @@ Redémarrez Claude Code, puis :
 
 **macOS / Linux**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NathanFenina/claude-seo/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/NathanFenina/decupler-seo/main/install.sh | bash
 ```
 
 **Windows (PowerShell)**
 ```powershell
-irm https://raw.githubusercontent.com/NathanFenina/claude-seo/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/NathanFenina/decupler-seo/main/install.ps1 | iex
 ```
 
 Le script installe les skills dans `~/.claude/skills/`, les agents dans
@@ -41,8 +41,8 @@ dépendances Python dans un environnement virtuel dédié.
 ## Méthode 3 — Manuelle
 
 ```bash
-git clone https://github.com/NathanFenina/claude-seo.git
-cd claude-seo
+git clone https://github.com/NathanFenina/decupler-seo.git
+cd decupler-seo
 ./install.sh
 ```
 
@@ -134,4 +134,4 @@ pip install -r requirements.txt
 ./uninstall.sh
 ```
 
-Ou, dans Claude Code : `/plugin uninstall claude-code-seo-decupler`.
+Ou, dans Claude Code : `/plugin uninstall decupler-seo`.

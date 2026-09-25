@@ -17,7 +17,7 @@ publiquement et parfois irréversible.
 ## Étape 0 — Le garde-fou, systématiquement
 
 ```bash
-python3 scripts/guard.py --action publier --cible <url>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/guard.py" --action publier --cible <url>
 ```
 
 | Verdict | Comportement |
@@ -142,7 +142,7 @@ d'origine n'a pas été perdu, l'URL n'a pas changé, la canonical est intacte.
 ## Revenir en arrière
 
 ```bash
-python3 scripts/cms_restore.py .seo-decupler/backups/<fichier>.json
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/cms_restore.py" .seo-decupler/backups/<fichier>.json
 ```
 
 Restaure l'état sauvegardé. Fonctionne pour WordPress et Webflow.

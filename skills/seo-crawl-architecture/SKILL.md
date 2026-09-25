@@ -17,7 +17,7 @@ sous-performe systématiquement — et c'est invisible page par page.
 ## Le crawl
 
 ```bash
-python3 scripts/crawl_site.py <url> --max 500 --delai 1000 --respecter-robots
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/crawl_site.py" <url> --max 500 --delai 1000 --respecter-robots
 ```
 
 Collecte par URL : code HTTP, profondeur depuis la home, title, meta, Hn,
@@ -59,7 +59,7 @@ articles de blog anciens.
 
 ### 4. Distribution de l'autorité
 Calculez un PageRank interne simplifié
-(`python3 scripts/internal_pagerank.py crawl.csv`) et confrontez-le aux
+(`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/internal_pagerank.py" crawl.csv`) et confrontez-le aux
 `pages_prioritaires` de la config.
 
 Le constat classique : la page « Mentions légales » reçoit 400 liens (le

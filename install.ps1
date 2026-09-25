@@ -1,12 +1,12 @@
 # ══════════════════════════════════════════════════════════════════
 #  Claude Code SEO Décupler — installation Windows
-#  https://github.com/NathanFenina/claude-seo
+#  https://github.com/NathanFenina/decupler-seo
 # ══════════════════════════════════════════════════════════════════
 
 $ErrorActionPreference = "Stop"
 
 function Install-SeoDecupler {
-    $Depot  = "https://github.com/NathanFenina/claude-seo"
+    $Depot  = "https://github.com/NathanFenina/decupler-seo"
     $Claude = Join-Path $HOME ".claude"
     $Racine = Join-Path $Claude "seo-decupler"
 
@@ -84,6 +84,23 @@ function Install-SeoDecupler {
         }
         Copy-Item -Force (Join-Path $Src "requirements.txt") $Racine -ErrorAction SilentlyContinue
         Copy-Item -Force (Join-Path $Src ".mcp.json") $Racine -ErrorAction SilentlyContinue
+
+        # Hors plugin, ${CLAUDE_PLUGIN_ROOT} n'existe pas : on le remplace par le
+        # dossier d'installation dans les skills, agents et commandes copiés.
+        Write-Host "  → Chemins des scripts…"
+        $RacineFwd = $Racine -replace '\\', '/'
+        $Copies = @()
+        foreach ($s in $Skills) { $Copies += Join-Path (Join-Path $DossierSkills $s.Name) "SKILL.md" }
+        foreach ($f in Get-ChildItem (Join-Path $Src "agents") -Filter *.md -ErrorAction SilentlyContinue) { $Copies += Join-Path $DossierAgents $f.Name }
+        foreach ($f in Get-ChildItem (Join-Path $Src "commands") -Filter *.md -ErrorAction SilentlyContinue) { $Copies += Join-Path $DossierCmd $f.Name }
+        foreach ($c in $Copies) {
+            if (Test-Path $c) {
+                $Texte = [System.IO.File]::ReadAllText($c)
+                if ($Texte.Contains('${CLAUDE_PLUGIN_ROOT}')) {
+                    [System.IO.File]::WriteAllText($c, $Texte.Replace('${CLAUDE_PLUGIN_ROOT}', $RacineFwd), (New-Object System.Text.UTF8Encoding $false))
+                }
+            }
+        }
 
         # ─── Dépendances Python ───────────────────────────────────
         Write-Host "  → Dépendances Python…"

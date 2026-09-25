@@ -2,7 +2,7 @@
 # Hook pre-commit — valide les fichiers JSON-LD avant de les committer.
 set -uo pipefail
 
-RACINE="${SEO_DECUPLER_RACINE:-${HOME}/.claude/seo-decupler}"
+RACINE="${SEO_DECUPLER_RACINE:-${CLAUDE_PLUGIN_ROOT:-${HOME}/.claude/seo-decupler}}"
 VALIDEUR="${RACINE}/scripts/schema_validate.py"
 [ -f "${VALIDEUR}" ] || VALIDEUR="scripts/schema_validate.py"
 [ -f "${VALIDEUR}" ] || exit 0

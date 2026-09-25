@@ -24,7 +24,7 @@ de mal se passer.
 la donnée est perdue.
 
 ```bash
-python3 scripts/crawl_site.py <ancien-site> --max 5000 --exporter inventaire.csv
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/crawl_site.py" <ancien-site> --max 5000 --exporter inventaire.csv
 ```
 
 Croisez trois sources :

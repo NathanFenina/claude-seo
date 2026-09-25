@@ -3,14 +3,14 @@ set -euo pipefail
 
 # ══════════════════════════════════════════════════════════════════
 #  Claude Code SEO Décupler — installation
-#  https://github.com/NathanFenina/claude-seo
+#  https://github.com/NathanFenina/decupler-seo
 # ══════════════════════════════════════════════════════════════════
 #
 # Tout est enveloppé dans main() pour qu'une coupure réseau pendant un
 # `curl | bash` n'exécute jamais une moitié de script.
 
 main() {
-    local DEPOT="https://github.com/NathanFenina/claude-seo"
+    local DEPOT="https://github.com/NathanFenina/decupler-seo"
     local CLAUDE="${HOME}/.claude"
     local RACINE="${CLAUDE}/seo-decupler"
 
@@ -38,7 +38,7 @@ main() {
     # ─── Récupération ─────────────────────────────────────────────
     local TEMPO
     TEMPO="$(mktemp -d)"
-    trap 'rm -rf "${TEMPO}"' EXIT
+    trap "rm -rf '${TEMPO}'" EXIT
 
     printf '\n  ↓ Téléchargement…\n'
     if [ -f "$(dirname "$0")/.claude-plugin/plugin.json" ]; then
@@ -77,6 +77,21 @@ main() {
     cp "${SRC}/.mcp.json" "${RACINE}/" 2>/dev/null || true
     chmod +x "${RACINE}"/scripts/*.py 2>/dev/null || true
     chmod +x "${RACINE}"/hooks/*.sh 2>/dev/null || true
+
+    # Hors plugin, ${CLAUDE_PLUGIN_ROOT} n'existe pas : on le remplace par le
+    # dossier d'installation dans les skills, agents et commandes copiés.
+    printf '  → Chemins des scripts…\n'
+    ${PY} - "${RACINE}" "${CLAUDE}" "${SRC}" <<'PYEOF'
+import pathlib, sys
+racine, claude, src = (pathlib.Path(a) for a in sys.argv[1:4])
+fichiers = [claude / "skills" / f.parent.name / "SKILL.md" for f in src.glob("skills/*/SKILL.md")]
+fichiers += [claude / d / f.name for d in ("agents", "commands") for f in src.glob(f"{d}/*.md")]
+for f in fichiers:
+    if f.is_file():
+        t = f.read_text(encoding="utf-8")
+        if "${CLAUDE_PLUGIN_ROOT}" in t:
+            f.write_text(t.replace("${CLAUDE_PLUGIN_ROOT}", racine.as_posix()), encoding="utf-8")
+PYEOF
 
     # ─── Dépendances Python ───────────────────────────────────────
     printf '  → Dépendances Python…\n'

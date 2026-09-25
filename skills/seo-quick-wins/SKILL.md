@@ -30,7 +30,7 @@ tri        : impressions décroissantes
 ```
 
 Sans MCP : Search Console → Résultats de recherche → exporter en CSV, puis
-`python3 scripts/gsc_analyse.py export.csv`.
+`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/gsc_analyse.py" export.csv`.
 
 ## Étape 2 — Trier en 4 paquets
 

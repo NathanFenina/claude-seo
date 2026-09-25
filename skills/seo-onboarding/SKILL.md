@@ -21,7 +21,7 @@ Il y a toujours quelque chose d'utile à faire avec ce qui est déjà là.
 ## 1. Diagnostiquer avant de parler
 
 ```bash
-python3 scripts/doctor.py --json
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.py" --json
 ```
 
 Lisez le résultat avant d'ouvrir la bouche. Vous saurez : les prérequis

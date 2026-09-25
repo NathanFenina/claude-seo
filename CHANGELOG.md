@@ -1,5 +1,26 @@
 # Journal des versions
 
+## 2.0.1 — Dépôt dédié `decupler-seo`
+
+### Modifié
+
+- Le dépôt devient `NathanFenina/decupler-seo` et le plugin s'appelle
+  `decupler-seo` : il ne se confond plus avec `claude-seo` dans Claude Code.
+  Installation : `/plugin install decupler-seo@decupler`.
+
+### Corrigé
+
+- `plugin.json` : le champ `agents` liste désormais les fichiers un par un.
+  Un dossier y est refusé (`agents: Invalid input`) et bloquait
+  l'installation par le marketplace.
+- Skills, commandes et agents appellent les scripts via
+  `${CLAUDE_PLUGIN_ROOT}/scripts/…` : ils fonctionnent depuis n'importe quel
+  dossier, plus seulement depuis le clone du dépôt. `install.sh` et
+  `install.ps1` remplacent cette variable par `~/.claude/seo-decupler`.
+- Les hooks retrouvent les scripts quand ils tournent dans le plugin.
+- `install.sh` : le nettoyage du dossier temporaire ne plante plus en fin
+  d'installation.
+
 ## 2.0.0 — Claude Code SEO Décupler
 
 Refonte complète. Le dépôt devient un dispositif SEO + GEO agentique et

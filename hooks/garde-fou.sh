@@ -6,7 +6,7 @@
 
 set -uo pipefail
 
-RACINE="${SEO_DECUPLER_RACINE:-${HOME}/.claude/seo-decupler}"
+RACINE="${SEO_DECUPLER_RACINE:-${CLAUDE_PLUGIN_ROOT:-${HOME}/.claude/seo-decupler}}"
 GARDE="${RACINE}/scripts/guard.py"
 [ -f "${GARDE}" ] || exit 0   # pas installé : on ne bloque rien
 

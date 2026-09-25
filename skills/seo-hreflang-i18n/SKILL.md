@@ -94,7 +94,7 @@ contredisent.
 ## L'audit
 
 ```bash
-python3 scripts/hreflang_check.py <url> --recursif
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/hreflang_check.py" <url> --recursif
 ```
 
 Vérifie : auto-référence, réciprocité, codes valides, URL absolues,
