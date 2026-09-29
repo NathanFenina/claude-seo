@@ -78,6 +78,32 @@ main() {
     chmod +x "${RACINE}"/scripts/*.py 2>/dev/null || true
     chmod +x "${RACINE}"/hooks/*.sh 2>/dev/null || true
 
+    # Installé en plugin, Claude Code remplace ${CLAUDE_PLUGIN_ROOT} par le
+    # dossier du plugin. Copiés à la main dans ~/.claude, les skills ne sont
+    # pas substitués : on écrit donc le chemin d'installation en dur.
+    printf '  → Chemins des scripts…\n'
+    "${PY}" - "${RACINE}" "${CLAUDE}" "${SRC}" <<'PYEOF'
+import sys
+from pathlib import Path
+
+racine, claude, src = (Path(a) for a in sys.argv[1:4])
+cibles = []
+for dossier in (src / "skills").iterdir():
+    if dossier.is_dir():
+        cibles += (claude / "skills" / dossier.name).rglob("*.md")
+cibles += (claude / "agents" / f.name for f in (src / "agents").glob("*.md"))
+cibles += (claude / "commands" / f.name for f in (src / "commands").glob("*.md"))
+
+jeton, ajustes = "${CLAUDE_PLUGIN_ROOT}", 0
+for fichier in cibles:
+    if fichier.is_file():
+        texte = fichier.read_text(encoding="utf-8")
+        if jeton in texte:
+            fichier.write_text(texte.replace(jeton, str(racine)), encoding="utf-8")
+            ajustes += 1
+print(f"    {ajustes} fichiers pointés vers {racine}")
+PYEOF
+
     # ─── Dépendances Python ───────────────────────────────────────
     printf '  → Dépendances Python…\n'
     local VENV="${RACINE}/.venv"

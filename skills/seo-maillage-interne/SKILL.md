@@ -18,8 +18,8 @@ personne ne travaille sérieusement.
 ## Étape 1 — Cartographier
 
 ```bash
-python3 scripts/crawl_site.py <url> --exporter crawl.csv
-python3 scripts/internal_pagerank.py crawl.csv
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/crawl_site.py" <url> --exporter crawl.csv
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/internal_pagerank.py" crawl.csv
 ```
 
 Vous obtenez par page : liens entrants internes, liens sortants, profondeur,

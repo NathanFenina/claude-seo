@@ -13,7 +13,9 @@ qu'il peut faire, ce qu'il ne fera jamais, et comment l'arrêter.
 | `assisted` | Écriture autorisée, mais chaque action est annoncée et attend un « oui ». |
 | `autonomous` | Écriture directe, sans demander. Les garde-fous durs s'appliquent toujours. **Défaut.** |
 
-Se règle dans `config/decupler-seo.config.yml`.
+Se règle dans `./decupler-seo.config.yml`, à la racine de chaque projet.
+`SEO_SAFE_MODE=1` fonctionne aussi bien exporté dans le shell qu'écrit dans
+le `.env` du projet.
 
 ---
 

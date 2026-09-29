@@ -16,19 +16,13 @@ import os
 import sys
 from pathlib import Path
 
-RACINE = Path(__file__).resolve().parent.parent
-DOSSIER = RACINE / ".seo-decupler" / "backups"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _projet import charger_env, dossier_etat  # noqa: E402
 
+# Les sauvegardes vivent dans le projet : dans le dossier du plugin, elles
+# disparaîtraient à la première mise à jour — avec le filet de sécurité.
+DOSSIER = dossier_etat("backups")
 
-def charger_env() -> None:
-    fichier = RACINE / ".env"
-    if not fichier.exists():
-        return
-    for ligne in fichier.read_text(encoding="utf-8").splitlines():
-        nue = ligne.strip()
-        if nue and not nue.startswith("#") and "=" in nue:
-            cle, _, valeur = nue.partition("=")
-            os.environ.setdefault(cle.strip(), valeur.strip().strip("\"'"))
 
 
 def lister() -> int:

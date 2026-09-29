@@ -21,7 +21,7 @@ lot est vide, les 40 % utiles tombent avec.
 ## Garde-fous
 
 ```bash
-python3 scripts/guard.py --action generer-pages --volume <N>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/guard.py" --action generer-pages --volume <N>
 ```
 
 | Volume | Comportement |

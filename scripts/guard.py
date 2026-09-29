@@ -21,8 +21,18 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-RACINE = Path(__file__).resolve().parent.parent
-CONFIG = RACINE / "config" / "decupler-seo.config.yml"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _projet import charger_env, config_est_le_modele, fichier_config, racine_projet  # noqa: E402
+
+# Le kill-switch doit voir SEO_SAFE_MODE même quand il n'est écrit que dans
+# le .env du projet — c'est là que la documentation dit de le mettre.
+charger_env()
+CONFIG = fichier_config()
+
+# Un kill-switch doit se déclencher sur toutes les façons raisonnables
+# d'écrire « oui » : quelqu'un qui tape SEO_SAFE_MODE=true s'attend à être
+# protégé.
+VALEURS_VRAIES = {"1", "true", "yes", "oui", "on"}
 
 # Actions qui écrivent quelque part hors de la machine locale.
 ACTIONS_ECRITURE = {
@@ -56,7 +66,7 @@ def _lire_config() -> dict:
     évite d'imposer PyYAML pour faire tourner le kill-switch.
     """
     valeurs: dict[str, str] = {}
-    if not CONFIG.exists():
+    if CONFIG is None:
         return valeurs
     for ligne in CONFIG.read_text(encoding="utf-8").splitlines():
         nue = ligne.split("#", 1)[0].strip()
@@ -71,15 +81,23 @@ def _lire_config() -> dict:
 
 def mode_effectif() -> tuple[str, str]:
     """Renvoie (mode, raison). SEO_SAFE_MODE prend le pas sur tout."""
-    if os.environ.get("SEO_SAFE_MODE", "0") == "1":
-        return "safe", "variable d'environnement SEO_SAFE_MODE=1"
+    if os.environ.get("SEO_SAFE_MODE", "0").strip().lower() in VALEURS_VRAIES:
+        return "safe", "SEO_SAFE_MODE activé (environnement ou .env du projet)"
     if "--safe" in sys.argv:
         return "safe", "flag --safe passé à la commande"
+    if CONFIG is None:
+        return "safe", "aucune configuration trouvée — repli sur safe"
     config = _lire_config()
     mode = config.get("mode", "safe")
     if mode not in {"safe", "assisted", "autonomous"}:
-        return "safe", f"mode '{mode}' inconnu dans la config — repli sur safe"
-    return mode, "config/decupler-seo.config.yml"
+        return "safe", f"mode '{mode}' inconnu dans {CONFIG.name} — repli sur safe"
+    if config_est_le_modele():
+        return mode, "modèle par défaut du plugin — aucune config propre à ce projet"
+    try:
+        source = str(CONFIG.relative_to(racine_projet()))
+    except ValueError:
+        source = str(CONFIG)
+    return mode, source
 
 
 def domaines_autorises() -> list[str]:

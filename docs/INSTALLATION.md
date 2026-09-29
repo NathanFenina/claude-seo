@@ -60,9 +60,17 @@ pip install -r requirements.txt
 
 ### 1 · Les clés
 
+La configuration et les clés vivent **dans le dossier de chaque projet**
+(votre site, ou le dossier d'un client), jamais dans le dossier du plugin —
+celui-ci est remplacé à chaque mise à jour.
+
 ```bash
-cp config/.env.example .env
+cd mon-projet/
+cp <plugin>/config/.env.example .env
+cp <plugin>/config/decupler-seo.config.yml ./decupler-seo.config.yml
 ```
+
+`/seo doctor` le fait pour vous et indique quel fichier est lu.
 
 Remplissez **uniquement ce dont vous avez besoin**. Chaque outil est
 optionnel. Voir [MCP.md](MCP.md) pour obtenir chaque clé.
@@ -71,7 +79,7 @@ optionnel. Voir [MCP.md](MCP.md) pour obtenir chaque clé.
 
 ### 2 · Le projet
 
-Ouvrez `config/decupler-seo.config.yml`, section `projet` :
+Ouvrez `./decupler-seo.config.yml` à la racine du projet, section `projet` :
 
 ```yaml
 projet:

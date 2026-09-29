@@ -18,7 +18,8 @@ import shutil
 import sys
 from pathlib import Path
 
-RACINE = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _projet import charger_env, config_est_le_modele, fichier_config, racine_projet, resoudre  # noqa: E402
 
 # (identifiant, nom, variables requises, niveau, ce que ça débloque, où l'obtenir, coût)
 OUTILS = [
@@ -63,6 +64,8 @@ OUTILS = [
      "https://www.reddit.com/prefs/apps", "gratuit"),
 ]
 
+ENV_LUS: list = []
+
 NIVEAUX = {
     1: "Socle gratuit — commencez par là",
     2: "Donnée marché — débloque la stratégie",
@@ -70,18 +73,6 @@ NIVEAUX = {
     4: "Visibilité IA (GEO)",
 }
 
-
-def _charger_env() -> None:
-    """Charge .env sans dépendance externe, sans écraser l'environnement réel."""
-    fichier = RACINE / ".env"
-    if not fichier.exists():
-        return
-    for ligne in fichier.read_text(encoding="utf-8").splitlines():
-        nue = ligne.strip()
-        if not nue or nue.startswith("#") or "=" not in nue:
-            continue
-        cle, _, valeur = nue.partition("=")
-        os.environ.setdefault(cle.strip(), valeur.strip().strip("\"'"))
 
 
 def _verifier(outil) -> dict:
@@ -91,7 +82,7 @@ def _verifier(outil) -> dict:
         valeur = os.environ.get(var, "").strip()
         if not valeur:
             manquantes.append(var)
-        elif var.endswith("_JSON") and not (RACINE / valeur).exists() and not Path(valeur).exists():
+        elif var.endswith("_JSON") and not resoudre(valeur).exists():
             manquantes.append(f"{var} (fichier introuvable : {valeur})")
     return {
         "id": ident,
@@ -106,7 +97,8 @@ def _verifier(outil) -> dict:
 
 
 def diagnostic() -> dict:
-    _charger_env()
+    global ENV_LUS
+    ENV_LUS = charger_env()
     resultats = [_verifier(o) for o in OUTILS]
     branches = [r for r in resultats if r["branche"]]
     prerequis = {
@@ -122,8 +114,10 @@ def diagnostic() -> dict:
         "branches": len(branches),
         "total": len(resultats),
         "prerequis": prerequis,
-        "config_presente": (RACINE / "config" / "decupler-seo.config.yml").exists(),
-        "env_present": (RACINE / ".env").exists(),
+        "config": str(fichier_config()) if fichier_config() else None,
+        "config_est_le_modele": config_est_le_modele(),
+        "env_lus": [str(f) for f in ENV_LUS],
+        "projet": str(racine_projet()),
     }
 
 
@@ -137,9 +131,13 @@ def afficher(rapport: dict) -> None:
         marque = "✓" if "absent" not in valeur and "non détecté" not in valeur else "!"
         print(f"  {marque} {cle:<10} {valeur}")
 
-    if not rapport["env_present"]:
-        print("\n  ! Aucun fichier .env trouvé.")
-        print("    → cp config/.env.example .env   puis remplissez ce dont vous avez besoin.")
+    print(f"\n  Projet : {rapport['projet']}")
+    if not rapport["env_lus"]:
+        print("  ! Aucun fichier .env dans ce projet.")
+        print("    → créez-en un à partir de config/.env.example du plugin.")
+    if rapport["config_est_le_modele"] or not rapport["config"]:
+        print("  ! Aucune config propre à ce projet — le modèle par défaut s'applique.")
+        print("    → copiez-le en ./decupler-seo.config.yml et remplissez la section projet.")
 
     for niveau in sorted(NIVEAUX):
         outils = [o for o in rapport["outils"] if o["niveau"] == niveau]

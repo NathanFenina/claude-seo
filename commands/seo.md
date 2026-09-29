@@ -9,7 +9,7 @@ Argument reçu : `$ARGUMENTS`
 
 ## Si aucun argument
 
-Lancez `python3 scripts/doctor.py`, puis proposez en trois lignes ce qui est
+Lancez `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.py"`, puis proposez en trois lignes ce qui est
 possible avec les outils branchés, et exécutez l'action la plus utile. Ne
 laissez jamais l'utilisateur devant un menu.
 

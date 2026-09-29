@@ -136,7 +136,7 @@ Ne promettez jamais un résultat rapide sur les modèles d'entraînement.
 Avec Perplexity en MCP, la mesure est scriptable :
 
 ```bash
-python3 scripts/share_of_model.py --prompts prompts.csv --moteurs perplexity
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/share_of_model.py" --prompts prompts.csv --moteurs perplexity
 ```
 
 Et pour un suivi automatique :

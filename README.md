@@ -235,7 +235,7 @@ SEO_SAFE_MODE=1
 /seo fix https://exemple.com --safe
 
 # 3 · la config
-mode: safe        # dans config/decupler-seo.config.yml
+mode: safe        # dans ./decupler-seo.config.yml du projet
 ```
 
 Ou dites simplement à Claude : « passe en safe mode ».
@@ -259,10 +259,11 @@ Ils existent parce que chacun correspond à une façon connue de se faire mal.
 ## Configuration
 
 ```bash
-cp config/.env.example .env      # vos clés — jamais commité
+cp config/.env.example .env      # vos clés, dans le dossier du projet — jamais commité
 ```
 
-Puis remplissez `config/decupler-seo.config.yml`, section `projet` : domaine,
+Puis copiez `config/decupler-seo.config.yml` à la racine du projet et remplissez
+la section `projet` : domaine,
 proposition de valeur, concurrents, pages prioritaires, ton. Une fois pour
 toutes — tous les skills s'en servent et arrêtent de vous poser les mêmes
 questions.

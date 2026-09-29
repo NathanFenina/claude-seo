@@ -7,7 +7,7 @@ description: >
   Déclencher quand l'utilisateur dit "je commence", "installe", "configure",
   "par où je commence", "qu'est-ce que je dois connecter", "ça marche pas",
   "doctor", "quels outils", ou à la toute première utilisation du dispositif
-  sur un projet (config/decupler-seo.config.yml vide ou absent).
+  sur un projet (aucun decupler-seo.config.yml dans le dossier du projet).
 ---
 
 # Onboarding — la première demi-heure
@@ -21,7 +21,7 @@ Il y a toujours quelque chose d'utile à faire avec ce qui est déjà là.
 ## 1. Diagnostiquer avant de parler
 
 ```bash
-python3 scripts/doctor.py --json
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.py" --json
 ```
 
 Lisez le résultat avant d'ouvrir la bouche. Vous saurez : les prérequis
@@ -86,7 +86,19 @@ Si vous voulez des comparaisons annuelles au-delà, il faut archiver.
 
 ## 5. Remplir la fiche projet
 
-Ouvrez `config/decupler-seo.config.yml` et remplissez la section `projet`.
+La configuration appartient au **projet**, pas au plugin : le dossier du plugin
+est remplacé à chaque mise à jour, et un fichier modifié là-bas serait perdu.
+
+Si le projet n'a pas encore de config, créez-la à la racine du projet :
+
+```bash
+cp "${CLAUDE_PLUGIN_ROOT}/config/decupler-seo.config.yml" ./decupler-seo.config.yml
+cp "${CLAUDE_PLUGIN_ROOT}/config/.env.example" ./.env
+```
+
+Vérifiez que `.env` est dans le `.gitignore` du projet avant d'y mettre une clé.
+Puis remplissez la section `projet` de `./decupler-seo.config.yml`.
+Un dossier par site ou par client = une config et un `.env` par site ou par client.
 Posez les questions en une seule fois, pas une par une :
 
 - Le domaine ?

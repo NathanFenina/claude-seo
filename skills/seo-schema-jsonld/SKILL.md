@@ -32,7 +32,7 @@ ignorant les deux. C'est un cas très fréquent sur WordPress.
 ## Étape 2 — Valider
 
 ```bash
-python3 scripts/schema_validate.py <fichier|url>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/schema_validate.py" <fichier|url>
 ```
 
 Trois niveaux de validation :
@@ -93,7 +93,7 @@ si un LLM vous cite nommément ou non.
 
 ## Étape 5 — Générer
 
-Templates dans `schema/templates.json`. Règles de génération :
+Templates dans `${CLAUDE_PLUGIN_ROOT}/schema/templates.json`. Règles de génération :
 
 - Renseignez **toutes les propriétés requises**, sinon pas de rich result
 - Ajoutez les recommandées quand la donnée existe vraiment

@@ -85,6 +85,30 @@ function Install-SeoDecupler {
         Copy-Item -Force (Join-Path $Src "requirements.txt") $Racine -ErrorAction SilentlyContinue
         Copy-Item -Force (Join-Path $Src ".mcp.json") $Racine -ErrorAction SilentlyContinue
 
+        # Hors plugin, ${CLAUDE_PLUGIN_ROOT} n'est pas substitué par Claude
+        # Code : on écrit le chemin d'installation en dur. Barres obliques,
+        # pour que le chemin reste valide dans le shell de Claude.
+        Write-Host "  → Chemins des scripts…"
+        $Jeton = '${CLAUDE_PLUGIN_ROOT}'
+        $RacineSlash = $Racine -replace '\\', '/'
+        $Cibles = @()
+        foreach ($s in $Skills) {
+            $Cibles += Get-ChildItem (Join-Path $DossierSkills $s.Name) -Recurse -Filter *.md
+        }
+        $Cibles += Get-ChildItem (Join-Path $Src "agents") -Filter *.md |
+            ForEach-Object { Get-Item (Join-Path $DossierAgents $_.Name) -ErrorAction SilentlyContinue }
+        $Cibles += Get-ChildItem (Join-Path $Src "commands") -Filter *.md |
+            ForEach-Object { Get-Item (Join-Path $DossierCmd $_.Name) -ErrorAction SilentlyContinue }
+        $Ajustes = 0
+        foreach ($f in ($Cibles | Where-Object { $_ })) {
+            $Texte = [IO.File]::ReadAllText($f.FullName)
+            if ($Texte.Contains($Jeton)) {
+                [IO.File]::WriteAllText($f.FullName, $Texte.Replace($Jeton, $RacineSlash))
+                $Ajustes++
+            }
+        }
+        Write-Host "    $Ajustes fichiers pointés vers $RacineSlash"
+
         # ─── Dépendances Python ───────────────────────────────────
         Write-Host "  → Dépendances Python…"
         $Venv = Join-Path $Racine ".venv"

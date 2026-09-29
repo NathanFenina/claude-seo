@@ -9,7 +9,7 @@ publique et parfois irréversible.
 
 ## Avant toute écriture
 
-1. `python3 scripts/guard.py --action publier --cible <url>`
+1. `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/guard.py" --action publier --cible <url>`
 2. Sauvegarder l'état d'origine dans `.seo-decupler/backups/`
 3. Le statut par défaut est **brouillon**, y compris en mode autonomous
 

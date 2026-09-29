@@ -17,7 +17,7 @@ chantier le plus mécanique : les gains sont garantis.
 ## L'audit
 
 ```bash
-python3 scripts/audit_images.py <url>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/audit_images.py" <url>
 ```
 
 Par image : URL, format, poids, dimensions réelles, dimensions affichées,

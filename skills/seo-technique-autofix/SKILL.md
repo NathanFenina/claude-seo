@@ -18,7 +18,7 @@ n'applique. Celui-ci applique. C'est toute la différence.
 ## Étape 0 — Vérifier le droit d'écrire
 
 ```bash
-python3 scripts/guard.py --action modifier-robots --cible <url>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/guard.py" --action modifier-robots --cible <url>
 ```
 
 - `AUTORISE` → on corrige directement
@@ -55,7 +55,7 @@ plus souvent oublié parce qu'il n'apparaît pas dans le HTML.
 
 ### 4. Redirections
 ```bash
-python3 scripts/check_redirects.py <url> --suivre-chaines
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/check_redirects.py" <url> --suivre-chaines
 ```
 - Chaîne de plus de 2 sauts → aplatir vers la destination finale
 - 302 permanente déguisée → passer en 301

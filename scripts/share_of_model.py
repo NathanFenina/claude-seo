@@ -20,7 +20,8 @@ import sys
 from datetime import date
 from pathlib import Path
 
-RACINE = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _projet import charger_env  # noqa: E402
 
 # Une 1re citation vaut plus qu'une 4e : le poids reflète ce qu'un lecteur
 # retient réellement d'une réponse générée.
@@ -38,16 +39,6 @@ GABARIT = [
     ("marque", "Quels sont les avis sur {marque} ?"),
 ]
 
-
-def charger_env() -> None:
-    fichier = RACINE / ".env"
-    if not fichier.exists():
-        return
-    for ligne in fichier.read_text(encoding="utf-8").splitlines():
-        nue = ligne.strip()
-        if nue and not nue.startswith("#") and "=" in nue:
-            cle, _, valeur = nue.partition("=")
-            os.environ.setdefault(cle.strip(), valeur.strip().strip("\"'"))
 
 
 def ecrire_gabarit(chemin: str) -> int:
