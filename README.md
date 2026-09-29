@@ -1,3 +1,18 @@
+> [!IMPORTANT]
+> **Ce dépôt n'est plus maintenu.** Le projet continue sous le nom
+> **decupler-seo** : **https://github.com/NathanFenina/decupler-seo**
+>
+> ```
+> /plugin marketplace add NathanFenina/decupler-seo
+> /plugin install decupler-seo@decupler
+> ```
+>
+> decupler-seo ajoute le pilotage autonome de projets (routines, mémoire par
+> client, mesure de chaque modification à J+28), le classement des
+> opportunités par client, la part de voix dans ChatGPT et Gemini, des tests
+> et une intégration continue. Si vous avez installé `claude-code-seo-decupler`,
+> désinstallez-le avant d'installer decupler-seo.
+
 # Claude Code SEO Décupler
 
 **La machine de guerre SEO + GEO pour Claude Code.**

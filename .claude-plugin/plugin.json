@@ -2,7 +2,7 @@
   "name": "claude-code-seo-decupler",
   "displayName": "Claude Code SEO Décupler",
   "version": "2.0.0",
-  "description": "Machine de guerre SEO + GEO pour Claude Code. 40 skills, 14 agents, 13 MCP préconfigurés. Audite, corrige, rédige, publie et mesure — en autonomie.",
+  "description": "Obsolète — remplacé par decupler-seo : https://github.com/NathanFenina/decupler-seo",
   "author": {
     "name": "Décupler",
     "url": "https://decupler.com"
